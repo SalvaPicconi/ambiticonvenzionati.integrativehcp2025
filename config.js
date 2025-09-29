@@ -12,7 +12,7 @@ const CONFIG = {
 
     // Configurazione dati
     data: {
-        jsonFile: "data.json",
+        jsonFile: "./data.json",
         autoRefresh: false,
         enableCache: true,
         maxRecords: 10000,
