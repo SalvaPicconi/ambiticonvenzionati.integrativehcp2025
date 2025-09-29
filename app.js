@@ -32,6 +32,7 @@ function initializeEventListeners() {
     const regioneFilter = document.getElementById('regione-filter');
     const provinciaFilter = document.getElementById('provincia-filter');
     const enteFilter = document.getElementById('ente-filter');
+    const comuneFilter = document.getElementById('comune-filter');
     const clearFiltersBtn = document.getElementById('clear-filters');
     
     if (regioneFilter) {
@@ -44,6 +45,9 @@ function initializeEventListeners() {
     
     if (enteFilter) {
         enteFilter.addEventListener('input', Utils.debounce(handleFilterChange, 300));
+    }
+    if (comuneFilter) {
+        comuneFilter.addEventListener('change', handleFilterChange);
     }
     
     if (clearFiltersBtn) {
@@ -261,11 +265,13 @@ function handleFilterChange() {
     const regioneFilter = document.getElementById('regione-filter');
     const provinciaFilter = document.getElementById('provincia-filter');
     const enteFilter = document.getElementById('ente-filter');
+    const comuneFilter = document.getElementById('comune-filter');
     
     const filters = {
         regione: regioneFilter?.value || '',
         provincia: provinciaFilter?.value || '',
-        ente: enteFilter?.value || ''
+    ente: enteFilter?.value || '',
+    comune: comuneFilter?.value || ''
     };
     
     appState.filters = filters;
@@ -294,6 +300,12 @@ function applyFilters() {
             return entiStr.includes(appState.filters.ente.toLowerCase());
         });
     }
+    if (appState.filters.comune) {
+        filtered = filtered.filter(item => {
+            const comuni = (item.comuniDistinti || []).map(c => (c || '').toLowerCase());
+            return comuni.some(c => c.includes(appState.filters.comune.toLowerCase()));
+        });
+    }
     
     appState.filteredData = filtered;
     
@@ -306,12 +318,14 @@ function clearFilters() {
     const regioneFilter = document.getElementById('regione-filter');
     const provinciaFilter = document.getElementById('provincia-filter');
     const enteFilter = document.getElementById('ente-filter');
+    const comuneFilter = document.getElementById('comune-filter');
     
     if (regioneFilter) regioneFilter.value = '';
     if (provinciaFilter) provinciaFilter.value = '';
     if (enteFilter) enteFilter.value = '';
+    if (comuneFilter) comuneFilter.value = '';
     
-    appState.filters = { regione: '', provincia: '', ente: '' };
+    appState.filters = { regione: '', provincia: '', ente: '', comune: '' };
     appState.filteredData = [...appState.data];
     
     renderTable();
@@ -323,12 +337,14 @@ function clearFilters() {
 function updateFilterOptions() {
     const regioneFilter = document.getElementById('regione-filter');
     const provinciaFilter = document.getElementById('provincia-filter');
+    const comuneFilter = document.getElementById('comune-filter');
     
-    if (!regioneFilter || !provinciaFilter) return;
+    if (!regioneFilter || !provinciaFilter || !comuneFilter) return;
     
     // Ottieni valori unici direttamente dai dati
     const regioni = [...new Set(appState.data.map(item => item.regione).filter(Boolean))].sort();
     const province = [...new Set(appState.data.map(item => item.provincia).filter(Boolean))].sort();
+    const comuni = [...new Set(appState.data.flatMap(item => (item.comuniDistinti || [])).filter(Boolean))].sort();
     
     // Aggiorna opzioni regioni
     const currentRegione = regioneFilter.value;
@@ -350,6 +366,17 @@ function updateFilterOptions() {
         option.textContent = provincia;
         if (provincia === currentProvincia) option.selected = true;
         provinciaFilter.appendChild(option);
+    });
+    
+    // Aggiorna opzioni comuni
+    const currentComune = comuneFilter.value;
+    comuneFilter.innerHTML = '<option value="">Tutti i comuni</option>';
+    comuni.forEach(comune => {
+        const option = document.createElement('option');
+        option.value = comune;
+        option.textContent = comune;
+        if (comune === currentComune) option.selected = true;
+        comuneFilter.appendChild(option);
     });
 }
 
@@ -668,10 +695,136 @@ function toggleCharts() {
     
     chartsSection.style.display = 'block';
     
-    chartsContainer.innerHTML = `
-        <div style="text-align: center; padding: 40px; color: var(--color-text-secondary);">
-            <h3>Grafici non ancora implementati</h3>
-            <p>Funzionalità in sviluppo</p>
+    // Genera grafici reali basati sui dati
+    generateCharts(chartsContainer);
+}
+
+function generateCharts(container) {
+    if (!window.appState.filteredData || window.appState.filteredData.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--color-text-secondary);">
+                <h3>📊 Nessun dato disponibile</h3>
+                <p>Carica i dati per visualizzare i grafici</p>
+            </div>
+        `;
+        return;
+    }
+
+    const data = window.appState.filteredData;
+    
+    // Analisi dati per grafici
+    const regioniStats = {};
+    const provinceStats = {};
+    const entiStats = {};
+    
+    data.forEach(item => {
+        // Conteggio per regione
+        if (item.regione) {
+            regioniStats[item.regione] = (regioniStats[item.regione] || 0) + 1;
+        }
+        
+        // Conteggio per provincia
+        if (item.provincia) {
+            provinceStats[item.provincia] = (provinceStats[item.provincia] || 0) + 1;
+        }
+        
+        // Conteggio per enti gestori (compatibile con struttura dati corrente)
+        if (Array.isArray(item.dettagliEnti)) {
+            item.dettagliEnti.forEach(d => {
+                if (d && d.ente) {
+                    entiStats[d.ente] = (entiStats[d.ente] || 0) + 1;
+                }
+            });
+        } else if (Array.isArray(item.entiDistinti)) {
+            item.entiDistinti.forEach(nome => {
+                if (nome) {
+                    entiStats[nome] = (entiStats[nome] || 0) + 1;
+                }
+            });
+        }
+    });
+    
+    const maxReg = Math.max(0, ...Object.values(regioniStats));
+    const maxProv = Math.max(0, ...Object.values(provinceStats));
+    const maxEnti = Math.max(0, ...Object.values(entiStats));
+    
+    container.innerHTML = `
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>📍 Distribuzione per Regione</h3>
+                <div class="chart-content">
+                    ${Object.entries(regioniStats)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 10)
+                        .map(([regione, count]) => `
+                            <div class="chart-bar">
+                                <span class="chart-label">${regione}</span>
+                                <div class="chart-bar-container">
+                                    <div class="chart-bar-fill" style="width: ${maxReg ? (count / maxReg) * 100 : 0}%"></div>
+                                    <span class="chart-value">${count}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>🏛️ Top Province per Numero Ambiti</h3>
+                <div class="chart-content">
+                    ${Object.entries(provinceStats)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 10)
+                        .map(([provincia, count]) => `
+                            <div class="chart-bar">
+                                <span class="chart-label">${provincia}</span>
+                                <div class="chart-bar-container">
+                                    <div class="chart-bar-fill" style="width: ${maxProv ? (count / maxProv) * 100 : 0}%"></div>
+                                    <span class="chart-value">${count}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>🏢 Principali Enti Gestori</h3>
+                <div class="chart-content">
+                    ${Object.entries(entiStats)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 8)
+                        .map(([ente, count]) => `
+                            <div class="chart-bar">
+                                <span class="chart-label">${ente.length > 30 ? ente.substring(0, 30) + '...' : ente}</span>
+                                <div class="chart-bar-container">
+                                    <div class="chart-bar-fill" style="width: ${maxEnti ? (count / maxEnti) * 100 : 0}%"></div>
+                                    <span class="chart-value">${count}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3>📊 Statistiche Generali</h3>
+                <div class="stats-summary">
+                    <div class="stat-item">
+                        <span class="stat-number">${Object.keys(regioniStats).length}</span>
+                        <span class="stat-text">Regioni Coinvolte</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${Object.keys(provinceStats).length}</span>
+                        <span class="stat-text">Province</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${Object.keys(entiStats).length}</span>
+                        <span class="stat-text">Enti Gestori Unici</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">${data.length}</span>
+                        <span class="stat-text">Ambiti Totali</span>
+                    </div>
+                </div>
+            </div>
         </div>
     `;
 }

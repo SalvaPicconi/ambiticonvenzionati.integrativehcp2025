@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ambiti Territoriali - Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <meta name="theme-color" content="#2563eb">
 </head>
 <body>
     <!-- Loading Overlay -->
@@ -22,12 +27,20 @@
         <header class="header">
             <div class="header-content">
                 <div class="header-title">
-                    <h1>Ambiti Territoriali</h1>
-                    <span class="header-subtitle">Dashboard per l'analisi degli enti gestori</span>
+                    <h1>Dott. Picconi - Consulente per la non autosufficienza</h1>
+                    <span class="header-subtitle">Analisi e consulenza per il cittadino</span>
                 </div>
                 
                 <div class="header-actions">
-                    <button id="theme-toggle" class="btn btn-ghost" title="Cambia tema">☀️</button>
+                    <a 
+                        href="mailto:dott.picconi@gmail.com?subject=Richiesta%20consulenza%20Ambiti%20Territoriali"
+                        class="btn btn-cta" 
+                        aria-label="Richiedi consulenza via email"
+                        title="Richiedi consulenza"
+                    >
+                        ✉️ Richiedi consulenza
+                    </a>
+                    <button id="theme-toggle" class="btn btn-ghost" title="Cambia tema" aria-label="Cambia tema">☀️</button>
                 </div>
             </div>
         </header>
@@ -38,7 +51,7 @@
             <section class="controls-section">
                 <div class="controls-grid">
                     <!-- File Upload -->
-                    <div class="control-group">
+                    <div class="control-group" style="display: none;">
                         <h3>Caricamento Dati</h3>
                         <input type="file" id="file-input" accept=".csv,.json,.xlsx,.xls" style="display: none;">
                         <button onclick="document.getElementById('file-input').click()" class="btn btn-primary">
@@ -59,6 +72,10 @@
                             
                             <select id="provincia-filter" class="form-select">
                                 <option value="">Tutte le province</option>
+                            </select>
+                            
+                            <select id="comune-filter" class="form-select">
+                                <option value="">Tutti i comuni</option>
                             </select>
                             
                             <input type="text" id="ente-filter" placeholder="Cerca ente..." class="form-input">
@@ -110,6 +127,27 @@
                             <div class="stat-label">Record Filtrati</div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <!-- Consulenza Section -->
+            <section class="consultation-section">
+                <div class="consultation-card">
+                    <h2>Consulenza specializzata da parte del Dott. Picconi</h2>
+                    <p>Hai bisogno di supporto per il progetto HCP2025?</p>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <span class="contact-icon">📧</span>
+                            <a href="mailto:dott.picconi@gmail.com">dott.picconi@gmail.com</a>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-icon">📱</span>
+                            <a href="tel:+393401496705">340 14 96705</a>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary consultation-btn" onclick="window.open('mailto:dott.picconi@gmail.com?subject=Richiesta Consulenza Ambiti Territoriali', '_blank')">
+                        Richiedi Consulenza
+                    </button>
                 </div>
             </section>
 
@@ -181,7 +219,7 @@
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-info">
-                    <span>&copy; 2025 Dashboard Ambiti Territoriali - Versione 1.0.0</span>
+                    <span>&copy; 2025 Dott. Picconi - Consulente per la non autosufficienza</span>
                 </div>
                 <div class="footer-status">
                     <span id="connection-status" class="status-indicator online">Online</span>
@@ -196,6 +234,7 @@
     <script src="app.js"></script>
 
     <script>
+        // Floating contact pill (no JS required, only anchors); kept here in case of future enhancements
         // Connection Status
         function updateConnectionStatus() {
             const status = document.getElementById('connection-status');
@@ -212,5 +251,15 @@
         window.addEventListener('offline', updateConnectionStatus);
         updateConnectionStatus();
     </script>
+
+    <!-- Floating Contact Pill (non invasivo) -->
+    <div class="contact-fab" role="complementary" aria-label="Contatti rapidi">
+        <a class="fab-item" href="mailto:dott.picconi@gmail.com" aria-label="Invia email al Dott. Picconi" title="Email">
+            ✉️
+        </a>
+        <a class="fab-item" href="tel:+393401496705" aria-label="Chiama il Dott. Picconi" title="Chiama">
+            📞
+        </a>
+    </div>
 </body>
 </html>
