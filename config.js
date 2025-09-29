@@ -14,7 +14,7 @@ const CONFIG = {
     data: {
         jsonFile: "./data.json",
         autoRefresh: false,
-        enableCache: true,
+        enableCache: false,
         maxRecords: 10000,
         defaultSort: { key: "regione", direction: "asc" }
     },

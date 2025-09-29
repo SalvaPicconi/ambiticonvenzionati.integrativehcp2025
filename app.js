@@ -28,15 +28,27 @@ function initializeApp() {
 }
 
 function initializeEventListeners() {
-    // Filtri
+    console.log('🔧 Inizializzazione event listeners...');
+    
+    // Filtri con controllo esistenza
     const regioneFilter = document.getElementById('regione-filter');
     const provinciaFilter = document.getElementById('provincia-filter');
     const enteFilter = document.getElementById('ente-filter');
     const comuneFilter = document.getElementById('comune-filter');
     const clearFiltersBtn = document.getElementById('clear-filters');
     
+    console.log('🔍 Elementi trovati:', {
+        regioneFilter: !!regioneFilter,
+        provinciaFilter: !!provinciaFilter,
+        enteFilter: !!enteFilter,
+        comuneFilter: !!comuneFilter,
+        clearFiltersBtn: !!clearFiltersBtn
+    });
+    
     if (regioneFilter) {
         regioneFilter.addEventListener('change', handleFilterChange);
+    } else {
+        console.warn('⚠️ regione-filter non trovato');
     }
     
     if (provinciaFilter) {
@@ -117,18 +129,23 @@ async function loadInitialData() {
     try {
         setLoading(true);
         
-        const response = await fetch(dataSource);
+    // Evita cache (specie su Safari/iOS) aggiungendo cache-busting e disabilitando cache
+    const cacheBust = `${dataSource}${dataSource.includes('?') ? '&' : '?'}v=${(CONFIG?.app?.version || '1.0.0')}-${Date.now()}`;
+    const response = await fetch(cacheBust, { cache: 'no-store' });
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         
         const jsonData = await response.json();
+        
+        // Gestisce la nuova struttura con ambiti_territoriali
         let data = jsonData.ambiti_territoriali || jsonData.data || jsonData;
         
         if (!Array.isArray(data)) {
             data = [data];
         }
         
+        console.log(`📊 Caricati ${data.length} ambiti territoriali dalla nuova struttura`);
         setAppData(data);
         showNotification(`Caricati ${data.length} ambiti territoriali`, 'success');
         
@@ -138,7 +155,7 @@ async function loadInitialData() {
         // Fallback a dati di esempio
         const exampleData = generateExampleData();
         setAppData(exampleData);
-        showNotification('Utilizzando dati di esempio', 'warning');
+        showNotification('Caricati dati di esempio', 'warning');
     } finally {
         setLoading(false);
     }
@@ -289,21 +306,33 @@ function applyFilters() {
     }
     
     if (appState.filters.provincia) {
-        filtered = filtered.filter(item => 
-            item.provincia && item.provincia.toLowerCase().includes(appState.filters.provincia.toLowerCase())
-        );
+        filtered = filtered.filter(item => {
+            const provincia1 = item.provincia || '';
+            const provincia2 = item.dettaglioEnte?.provincia || '';
+            return provincia1.toLowerCase().includes(appState.filters.provincia.toLowerCase()) ||
+                   provincia2.toLowerCase().includes(appState.filters.provincia.toLowerCase());
+        });
     }
     
     if (appState.filters.ente) {
         filtered = filtered.filter(item => {
-            const entiStr = (item.entiDistinti || []).join(' ').toLowerCase();
-            return entiStr.includes(appState.filters.ente.toLowerCase());
+            // Cerca nel nominativo ambito (ente gestore)
+            const nomeEnte = item.dettaglioEnte?.ente || '';
+            // Cerca anche nel comune capofila
+            const capofila = item.dettaglioEnte?.comuneCapofila || '';
+            const searchStr = (nomeEnte + ' ' + capofila).toLowerCase();
+            return searchStr.includes(appState.filters.ente.toLowerCase());
         });
     }
+    
     if (appState.filters.comune) {
         filtered = filtered.filter(item => {
-            const comuni = (item.comuniDistinti || []).map(c => (c || '').toLowerCase());
-            return comuni.some(c => c.includes(appState.filters.comune.toLowerCase()));
+            // Cerca nei comuni di competenza
+            const comuniCompetenza = (item.comuniCompetenza || []).map(c => (c || '').toLowerCase());
+            // Cerca anche nel comune capofila
+            const capofila = (item.dettaglioEnte?.comuneCapofila || '').toLowerCase();
+            const allComuni = [...comuniCompetenza, capofila];
+            return allComuni.some(c => c.includes(appState.filters.comune.toLowerCase()));
         });
     }
     
@@ -341,10 +370,37 @@ function updateFilterOptions() {
     
     if (!regioneFilter || !provinciaFilter || !comuneFilter) return;
     
-    // Ottieni valori unici direttamente dai dati
+    // Ottieni valori unici dalla nuova struttura
     const regioni = [...new Set(appState.data.map(item => item.regione).filter(Boolean))].sort();
-    const province = [...new Set(appState.data.map(item => item.provincia).filter(Boolean))].sort();
-    const comuni = [...new Set(appState.data.flatMap(item => (item.comuniDistinti || [])).filter(Boolean))].sort();
+    
+    // Le province possono essere sia a livello root che in dettaglioEnte
+    const provinceSet = new Set();
+    appState.data.forEach(item => {
+        if (item.provincia) provinceSet.add(item.provincia);
+        if (item.dettaglioEnte?.provincia) provinceSet.add(item.dettaglioEnte.provincia);
+    });
+    const province = [...provinceSet].filter(Boolean).sort();
+    
+    // Raccogli tutti i comuni (competenza + capofila)
+    const comuniSet = new Set();
+    appState.data.forEach(item => {
+        // Comuni di competenza
+        if (item.comuniCompetenza) {
+            item.comuniCompetenza.forEach(comune => {
+                if (comune && comune.trim()) {
+                    comuniSet.add(comune.trim());
+                }
+            });
+        }
+        // Comune capofila
+        if (item.dettaglioEnte?.comuneCapofila) {
+            const capofila = item.dettaglioEnte.comuneCapofila.trim();
+            if (capofila) {
+                comuniSet.add(capofila);
+            }
+        }
+    });
+    const comuni = [...comuniSet].sort();
     
     // Aggiorna opzioni regioni
     const currentRegione = regioneFilter.value;
@@ -396,8 +452,21 @@ function handleSort(event) {
     
     appState.sortConfig = { key: column, direction };
     
-    // Applica ordinamento
-    appState.filteredData = Utils.sortBy(appState.filteredData, column, direction);
+    // Applica ordinamento con logica personalizzata per campi annidati
+    appState.filteredData = Utils.sortBy(appState.filteredData, (item) => {
+        switch (column) {
+            case 'regione':
+                return item.regione || '';
+            case 'ente':
+                return item.dettaglioEnte?.ente || '';
+            case 'comuneCapofila':
+                return item.dettaglioEnte?.comuneCapofila || '';
+            case 'nominativoAmbito':
+                return item.nominativoAmbito || '';
+            default:
+                return item[column] || '';
+        }
+    }, direction);
     
     // Aggiorna UI
     updateSortUI();
@@ -443,9 +512,12 @@ function renderTable() {
         tableBody.innerHTML = `
             <tr>
                 <td colspan="5" class="text-center" style="padding: 40px;">
-                    <p style="color: var(--color-text-secondary);">
-                        ${appState.data.length === 0 ? 'Nessun dato disponibile' : 'Nessun risultato con i filtri applicati'}
-                    </p>
+                    <div style="color: var(--color-text-secondary); line-height: 1.6;">
+                        ${appState.data.length === 0 ? 
+                            '<p style="margin-bottom: 10px;"><strong>📋 Esplora gli Ambiti Territoriali</strong></p><p>Utilizza i filtri sopra per cercare per regione, provincia, comune o ente gestore.<br>Clicca sulle righe per vedere i dettagli completi!</p>' : 
+                            '<p>Nessun risultato con i filtri applicati</p><p>Prova a modificare i criteri di ricerca</p>'
+                        }
+                    </div>
                 </td>
             </tr>
         `;
@@ -455,13 +527,16 @@ function renderTable() {
     // Genera righe
     const rows = appState.filteredData.map((item, index) => {
         const isExpanded = appState.expandedRows.has(index);
+        const nomeEnte = item.dettaglioEnte?.ente || 'N/A';
+        const comuneCapofila = item.dettaglioEnte?.comuneCapofila || 'N/A';
+        const nominativoAmbito = item.nominativoAmbito || 'N/A';
         
         return `
             <tr class="data-row" data-index="${index}">
                 <td>${Utils.sanitize(item.regione || '')}</td>
-                <td>${Utils.sanitize(item.provincia || '')}</td>
-                <td class="text-right">${Utils.formatNumber(item.numeroComuni || 0)}</td>
-                <td class="text-right">${Utils.formatNumber(item.entiUnici || 0)}</td>
+                <td title="${Utils.sanitize(nomeEnte)}">${Utils.truncate(nomeEnte, 35)}</td>
+                <td title="${Utils.sanitize(comuneCapofila)}">${Utils.truncate(comuneCapofila, 30)}</td>
+                <td title="${Utils.sanitize(nominativoAmbito)}">${Utils.truncate(nominativoAmbito, 40)}</td>
                 <td>
                     <button class="expand-btn ${isExpanded ? 'expanded' : ''}" 
                             onclick="toggleRowExpansion(${index})"
@@ -478,9 +553,9 @@ function renderTable() {
 }
 
 function renderDetailsRow(item, index) {
-    const entiDistinti = item.entiDistinti || [];
-    const comuniDistinti = item.comuniDistinti || [];
-    const dettagliEnti = item.dettagliEnti || [];
+    const dettaglioEnte = item.dettaglioEnte || {};
+    const comuniCompetenza = item.comuniCompetenza || [];
+    const dettagliComuni = item.dettagliComuni || [];
     
     return `
         <tr class="details-row" data-index="${index}">
@@ -488,39 +563,41 @@ function renderDetailsRow(item, index) {
                 <div class="details-content">
                     <div class="details-grid">
                         <div class="detail-section">
-                            <h4>Enti Gestori (${entiDistinti.length})</h4>
-                            <ul class="detail-list">
-                                ${entiDistinti.map(ente => 
-                                    `<li>${Utils.sanitize(ente)}</li>`
-                                ).join('')}
-                            </ul>
+                            <h4>📋 Ente Gestore</h4>
+                            <div class="entity-details">
+                                <strong>${Utils.sanitize(dettaglioEnte.ente || 'N/A')}</strong><br>
+                                ${dettaglioEnte.indirizzo ? `📍 ${Utils.sanitize(dettaglioEnte.indirizzo)}<br>` : ''}
+                                ${dettaglioEnte.comuneCapofila ? `🏛️ Comune Capofila: ${Utils.sanitize(dettaglioEnte.comuneCapofila)}<br>` : ''}
+                                ${dettaglioEnte.provincia ? `📍 Provincia: ${Utils.sanitize(dettaglioEnte.provincia)}` : ''}
+                            </div>
                         </div>
                         
                         <div class="detail-section">
-                            <h4>Comuni Coinvolti (${comuniDistinti.length})</h4>
+                            <h4>🏘️ Comuni di Competenza (${comuniCompetenza.length})</h4>
                             <ul class="detail-list">
-                                ${comuniDistinti.slice(0, 10).map(comune => 
+                                ${comuniCompetenza.slice(0, 15).map(comune => 
                                     `<li>${Utils.sanitize(comune)}</li>`
                                 ).join('')}
-                                ${comuniDistinti.length > 10 ? 
-                                    `<li><em>... e altri ${comuniDistinti.length - 10} comuni</em></li>` : 
+                                ${comuniCompetenza.length > 15 ? 
+                                    `<li><em>... e altri ${comuniCompetenza.length - 15} comuni</em></li>` : 
                                     ''
                                 }
                             </ul>
                         </div>
                         
-                        ${dettagliEnti.length > 0 ? `
+                        ${dettagliComuni.length > 0 ? `
                             <div class="detail-section" style="grid-column: 1 / -1;">
-                                <h4>Dettagli Enti</h4>
-                                ${dettagliEnti.map(ente => `
-                                    <div class="entity-details">
-                                        <strong>${Utils.sanitize(ente.ente || '')}</strong><br>
-                                        ${ente.indirizzo ? `📍 ${Utils.sanitize(ente.indirizzo)}<br>` : ''}
-                                        ${ente.cap ? `📮 ${Utils.sanitize(ente.cap)} ` : ''}
-                                        ${ente.comuneAmbito ? `${Utils.sanitize(ente.comuneAmbito)}<br>` : ''}
-                                        ${ente.codice ? `🔖 Codice: ${Utils.sanitize(ente.codice)}` : ''}
-                                    </div>
-                                `).join('')}
+                                <h4>📊 Dettagli Comuni</h4>
+                                <div style="max-height: 200px; overflow-y: auto;">
+                                    ${dettagliComuni.slice(0, 10).map(comune => `
+                                        <div class="entity-details" style="margin-bottom: 8px; padding: 8px; background: var(--color-bg-secondary); border-radius: 4px;">
+                                            <strong>${Utils.sanitize(comune.comune || '')}</strong>
+                                            ${comune.cap ? ` • � ${Utils.sanitize(comune.cap)}` : ''}
+                                            ${comune.codice ? ` • � ${Utils.sanitize(comune.codice)}` : ''}
+                                        </div>
+                                    `).join('')}
+                                    ${dettagliComuni.length > 10 ? `<p><em>... e altri ${dettagliComuni.length - 10} comuni con dettagli</em></p>` : ''}
+                                </div>
                             </div>
                         ` : ''}
                     </div>
@@ -568,15 +645,29 @@ function updateSummaryStats() {
     
     const data = appState.filteredData;
     
-    // Calcola statistiche
-    const ambitiCount = data.length;
-    const comuniSum = data.reduce((sum, item) => sum + (item.numeroComuni || 0), 0);
-    const entiSum = data.reduce((sum, item) => sum + (item.entiUnici || 0), 0);
+    // Calcola statistiche CORRETTE
+    const ambitiCount = data.length; // Numero di ambiti territoriali (228)
+    
+    // Conta comuni unici di competenza 
+    const comuniUnici = new Set();
+    data.forEach(item => {
+        if (item.comuniCompetenza) {
+            item.comuniCompetenza.forEach(comune => comuniUnici.add(comune));
+        }
+    });
+    
+    // Conta nominativi ambito unici (per evitare duplicati negli enti)
+    const nominativiUnici = new Set();
+    data.forEach(item => {
+        if (item.dettaglioEnte && item.dettaglioEnte.ente) {
+            nominativiUnici.add(item.dettaglioEnte.ente);
+        }
+    });
     
     // Aggiorna UI
     totalAmbiti.textContent = Utils.formatNumber(ambitiCount);
-    totalComuni.textContent = Utils.formatNumber(comuniSum);
-    totalEnti.textContent = Utils.formatNumber(entiSum);
+    totalComuni.textContent = Utils.formatNumber(comuniUnici.size);
+    totalEnti.textContent = Utils.formatNumber(nominativiUnici.size);
     filteredCount.textContent = Utils.formatNumber(ambitiCount);
 }
 
@@ -1023,3 +1114,14 @@ window.exportToJSON = exportToJSON;
 window.exportToExcel = exportToExcel;
 window.toggleCharts = toggleCharts;
 window.toggleAnalytics = toggleAnalytics;
+
+// Inizializzazione automatica quando DOM è pronto
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM pronto, inizializzo app principale...');
+    try {
+        initializeApp();
+        console.log('✅ App inizializzata con successo');
+    } catch (error) {
+        console.error('❌ Errore nell\'inizializzazione:', error);
+    }
+});
