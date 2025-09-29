@@ -927,6 +927,21 @@ body {
 .fab-item:hover { transform: translateY(-2px); filter: brightness(1.1); }
 .fab-item:focus { outline: 3px solid rgba(37, 99, 235, 0.35); outline-offset: 2px; }
 
+/* --- Mobile improvements --- */
+@media (max-width: 640px) {
+    .header-content { flex-direction: column; gap: 10px; align-items: flex-start; }
+    .header-actions { display: flex; gap: 8px; width: 100%; }
+    .btn-cta { width: auto; font-size: 0.95rem; padding: 10px 12px; }
+    .controls-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .filters-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .pivot-table { min-width: 640px; }
+    .consultation-card { padding: 1.25rem; }
+    .charts-grid { grid-template-columns: 1fr !important; }
+    .contact-fab { right: 12px; bottom: 12px; }
+}
+
 /* === CHARTS SECTION === */
 .charts-grid {
     display: grid;
