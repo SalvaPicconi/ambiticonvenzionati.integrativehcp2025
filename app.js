@@ -287,8 +287,8 @@ function handleFilterChange() {
     const filters = {
         regione: regioneFilter?.value || '',
         provincia: provinciaFilter?.value || '',
-    ente: enteFilter?.value || '',
-    comune: comuneFilter?.value || ''
+        ente: enteFilter?.value || '',
+        comune: comuneFilter?.value || ''
     };
     
     appState.filters = filters;
@@ -296,6 +296,7 @@ function handleFilterChange() {
 }
 
 function applyFilters() {
+    console.log('🔍 ApplyFilters chiamato:', appState.filters);
     let filtered = [...appState.data];
     
     // Applica filtri
@@ -337,6 +338,7 @@ function applyFilters() {
     }
     
     appState.filteredData = filtered;
+    console.log('📊 Risultati filtro:', filtered.length, 'di', appState.data.length);
     
     // Aggiorna UI
     renderTable();
@@ -367,73 +369,78 @@ function updateFilterOptions() {
     const regioneFilter = document.getElementById('regione-filter');
     const provinciaFilter = document.getElementById('provincia-filter');
     const comuneFilter = document.getElementById('comune-filter');
-    
-    if (!regioneFilter || !provinciaFilter || !comuneFilter) return;
-    
+
     // Ottieni valori unici dalla nuova struttura
     const regioni = [...new Set(appState.data.map(item => item.regione).filter(Boolean))].sort();
-    
+
     // Le province possono essere sia a livello root che in dettaglioEnte
     const provinceSet = new Set();
     appState.data.forEach(item => {
-        if (item.provincia) provinceSet.add(item.provincia);
-        if (item.dettaglioEnte?.provincia) provinceSet.add(item.dettaglioEnte.provincia);
+        if (item.provincia) provinceSet.add(String(item.provincia).trim());
+        if (item.dettaglioEnte?.provincia) provinceSet.add(String(item.dettaglioEnte.provincia).trim());
     });
     const province = [...provinceSet].filter(Boolean).sort();
-    
+
     // Raccogli tutti i comuni (competenza + capofila)
     const comuniSet = new Set();
     appState.data.forEach(item => {
         // Comuni di competenza
-        if (item.comuniCompetenza) {
+        if (Array.isArray(item.comuniCompetenza)) {
             item.comuniCompetenza.forEach(comune => {
-                if (comune && comune.trim()) {
-                    comuniSet.add(comune.trim());
+                if (comune && String(comune).trim()) {
+                    comuniSet.add(String(comune).trim());
                 }
             });
         }
         // Comune capofila
-        if (item.dettaglioEnte?.comuneCapofila) {
-            const capofila = item.dettaglioEnte.comuneCapofila.trim();
-            if (capofila) {
-                comuniSet.add(capofila);
-            }
+        const capofila = item.dettaglioEnte?.comuneCapofila;
+        if (capofila && String(capofila).trim()) {
+            comuniSet.add(String(capofila).trim());
         }
     });
     const comuni = [...comuniSet].sort();
-    
-    // Aggiorna opzioni regioni
-    const currentRegione = regioneFilter.value;
-    regioneFilter.innerHTML = '<option value="">Tutte le regioni</option>';
-    regioni.forEach(regione => {
-        const option = document.createElement('option');
-        option.value = regione;
-        option.textContent = regione;
-        if (regione === currentRegione) option.selected = true;
-        regioneFilter.appendChild(option);
-    });
-    
-    // Aggiorna opzioni province
-    const currentProvincia = provinciaFilter.value;
-    provinciaFilter.innerHTML = '<option value="">Tutte le province</option>';
-    province.forEach(provincia => {
-        const option = document.createElement('option');
-        option.value = provincia;
-        option.textContent = provincia;
-        if (provincia === currentProvincia) option.selected = true;
-        provinciaFilter.appendChild(option);
-    });
-    
-    // Aggiorna opzioni comuni
-    const currentComune = comuneFilter.value;
-    comuneFilter.innerHTML = '<option value="">Tutti i comuni</option>';
-    comuni.forEach(comune => {
-        const option = document.createElement('option');
-        option.value = comune;
-        option.textContent = comune;
-        if (comune === currentComune) option.selected = true;
-        comuneFilter.appendChild(option);
-    });
+
+    // Log diagnostico leggero
+    try { console.debug('[Filters] regioni:', regioni.length, 'province:', province.length, 'comuni:', comuni.length); } catch {}
+
+    // Aggiorna opzioni regioni (se presente)
+    if (regioneFilter) {
+        const currentRegione = regioneFilter.value;
+        regioneFilter.innerHTML = '<option value="">Tutte le regioni</option>';
+        regioni.forEach(regione => {
+            const option = document.createElement('option');
+            option.value = regione;
+            option.textContent = regione;
+            if (regione === currentRegione) option.selected = true;
+            regioneFilter.appendChild(option);
+        });
+    }
+
+    // Aggiorna opzioni province (se presente)
+    if (provinciaFilter) {
+        const currentProvincia = provinciaFilter.value;
+        provinciaFilter.innerHTML = '<option value="">Tutte le province</option>';
+        province.forEach(provincia => {
+            const option = document.createElement('option');
+            option.value = provincia;
+            option.textContent = provincia;
+            if (provincia === currentProvincia) option.selected = true;
+            provinciaFilter.appendChild(option);
+        });
+    }
+
+    // Aggiorna opzioni comuni (se presente)
+    if (comuneFilter) {
+        const currentComune = comuneFilter.value;
+        comuneFilter.innerHTML = '<option value="">Tutti i comuni</option>';
+        comuni.forEach(comune => {
+            const option = document.createElement('option');
+            option.value = comune;
+            option.textContent = comune;
+            if (comune === currentComune) option.selected = true;
+            comuneFilter.appendChild(option);
+        });
+    }
 }
 
 // === ORDINAMENTO ===
