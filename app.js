@@ -326,34 +326,30 @@ function updateFilterOptions() {
     
     if (!regioneFilter || !provinciaFilter) return;
     
-    // Ottieni valori unici
-    const regioni = Utils.unique(appState.data, 'regione').sort();
-    const province = Utils.unique(appState.data, 'provincia').sort();
+    // Ottieni valori unici direttamente dai dati
+    const regioni = [...new Set(appState.data.map(item => item.regione).filter(Boolean))].sort();
+    const province = [...new Set(appState.data.map(item => item.provincia).filter(Boolean))].sort();
     
     // Aggiorna opzioni regioni
     const currentRegione = regioneFilter.value;
     regioneFilter.innerHTML = '<option value="">Tutte le regioni</option>';
     regioni.forEach(regione => {
-        if (regione) {
-            const option = document.createElement('option');
-            option.value = regione;
-            option.textContent = regione;
-            if (regione === currentRegione) option.selected = true;
-            regioneFilter.appendChild(option);
-        }
+        const option = document.createElement('option');
+        option.value = regione;
+        option.textContent = regione;
+        if (regione === currentRegione) option.selected = true;
+        regioneFilter.appendChild(option);
     });
     
     // Aggiorna opzioni province
     const currentProvincia = provinciaFilter.value;
     provinciaFilter.innerHTML = '<option value="">Tutte le province</option>';
     province.forEach(provincia => {
-        if (provincia) {
-            const option = document.createElement('option');
-            option.value = provincia;
-            option.textContent = provincia;
-            if (provincia === currentProvincia) option.selected = true;
-            provinciaFilter.appendChild(option);
-        }
+        const option = document.createElement('option');
+        option.value = provincia;
+        option.textContent = provincia;
+        if (provincia === currentProvincia) option.selected = true;
+        provinciaFilter.appendChild(option);
     });
 }
 
