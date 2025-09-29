@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambiti Territoriali - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>Caricamento Dashboard</h2>
+            <p>Inizializzazione in corso...</p>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app" class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Ambiti Territoriali</h1>
+                    <span class="header-subtitle">Dashboard per l'analisi degli enti gestori</span>
+                </div>
+                
+                <div class="header-actions">
+                    <button id="theme-toggle" class="btn btn-ghost" title="Cambia tema">☀️</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Data Controls -->
+            <section class="controls-section">
+                <div class="controls-grid">
+                    <!-- File Upload -->
+                    <div class="control-group">
+                        <h3>Caricamento Dati</h3>
+                        <input type="file" id="file-input" accept=".csv,.json,.xlsx,.xls" style="display: none;">
+                        <button onclick="document.getElementById('file-input').click()" class="btn btn-primary">
+                            📁 Carica File
+                        </button>
+                        <button onclick="loadExampleData()" class="btn btn-secondary">
+                            📊 Dati Esempio
+                        </button>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="control-group">
+                        <h3>Filtri</h3>
+                        <div class="filters-grid">
+                            <select id="regione-filter" class="form-select">
+                                <option value="">Tutte le regioni</option>
+                            </select>
+                            
+                            <select id="provincia-filter" class="form-select">
+                                <option value="">Tutte le province</option>
+                            </select>
+                            
+                            <input type="text" id="ente-filter" placeholder="Cerca ente..." class="form-input">
+                            
+                            <button id="clear-filters" class="btn btn-secondary">Pulisci</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="control-group">
+                        <h3>Azioni</h3>
+                        <div class="actions-grid">
+                            <button id="analytics-btn" class="btn btn-accent">📊 Analitiche</button>
+                            <button id="charts-btn" class="btn btn-accent">📈 Grafici</button>
+                            <button id="test-btn" class="btn btn-accent">🧪 Test</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Summary Statistics -->
+            <section id="summary-section" class="summary-section">
+                <h2>Statistiche Generali</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-value" id="total-ambiti">0</div>
+                            <div class="stat-label">Ambiti Territoriali</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-value" id="total-comuni">0</div>
+                            <div class="stat-label">Comuni Coinvolti</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-value" id="total-enti">0</div>
+                            <div class="stat-label">Enti Gestori</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-content">
+                            <div class="stat-value" id="filtered-count">0</div>
+                            <div class="stat-label">Record Filtrati</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Export Section -->
+            <section id="export-section" class="export-section">
+                <h2>Esportazione Dati</h2>
+                <div class="export-grid">
+                    <button onclick="exportToCSV(false)" class="btn btn-export">CSV Aggregato</button>
+                    <button onclick="exportToCSV(true)" class="btn btn-export">CSV Dettagliato</button>
+                    <button onclick="exportToExcel()" class="btn btn-export">Excel</button>
+                    <button onclick="exportToJSON()" class="btn btn-export">JSON</button>
+                </div>
+            </section>
+
+            <!-- Data Table -->
+            <section class="table-section">
+                <div class="table-header">
+                    <h2>Tabella Pivot - Ambiti Territoriali</h2>
+                    <div class="table-controls">
+                        <button id="expand-all" class="btn btn-sm">Espandi Tutto</button>
+                        <button id="collapse-all" class="btn btn-sm">Comprimi Tutto</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="pivot-table" class="pivot-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-column="regione">
+                                    <span>Regione</span>
+                                </th>
+                                <th class="sortable" data-column="provincia">
+                                    <span>Provincia</span>
+                                </th>
+                                <th class="sortable" data-column="numeroComuni">
+                                    <span>N. Comuni</span>
+                                </th>
+                                <th class="sortable" data-column="entiUnici">
+                                    <span>Enti Unici</span>
+                                </th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Dati generati dinamicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section id="charts-section" class="charts-section" style="display: none;">
+                <h2>Visualizzazioni</h2>
+                <div id="charts-container" class="charts-container">
+                    <!-- Grafici generati dinamicamente -->
+                </div>
+            </section>
+
+            <!-- Analytics Section -->
+            <section id="analytics-section" class="analytics-section" style="display: none;">
+                <h2>Analitiche Avanzate</h2>
+                <div id="analytics-container" class="analytics-container">
+                    <!-- Analitiche generate dinamicamente -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <span>&copy; 2025 Dashboard Ambiti Territoriali - Versione 1.0.0</span>
+                </div>
+                <div class="footer-status">
+                    <span id="connection-status" class="status-indicator online">Online</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="config.js"></script>
+    <script src="utils.js"></script>
+    <script src="app.js"></script>
+
+    <script>
+        // Connection Status
+        function updateConnectionStatus() {
+            const status = document.getElementById('connection-status');
+            if (navigator.onLine) {
+                status.textContent = 'Online';
+                status.className = 'status-indicator online';
+            } else {
+                status.textContent = 'Offline';
+                status.className = 'status-indicator offline';
+            }
+        }
+
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        updateConnectionStatus();
+    </script>
+</body>
+</html>
