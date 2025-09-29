@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Filtri Live</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .filters { background: #f5f5f5; padding: 15px; margin: 10px 0; }
+        .result { background: #e8f5e8; padding: 10px; margin: 10px 0; }
+        .error { background: #ffeaea; color: red; padding: 10px; margin: 10px 0; }
+        select, input { margin: 5px; padding: 8px; }
+        button { padding: 8px 15px; margin: 5px; }
+        .count { font-weight: bold; color: #2563eb; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Live Filtri</h1>
+    
+    <div class="filters">
+        <h3>Filtri Test</h3>
+        <select id="regione-test">
+            <option value="">Tutte le regioni</option>
+        </select>
+        
+        <select id="provincia-test">
+            <option value="">Tutte le province</option>
+        </select>
+        
+        <select id="comune-test">
+            <option value="">Tutti i comuni</option>
+        </select>
+        
+        <input type="text" id="ente-test" placeholder="Cerca ente...">
+        
+        <button onclick="testFilters()">🔍 Applica Filtri</button>
+        <button onclick="clearTest()">🧹 Pulisci</button>
+    </div>
+    
+    <div id="result" class="result">
+        <div>📊 Risultati: <span class="count" id="count">0</span> di <span id="total">0</span> ambiti</div>
+        <div id="details"></div>
+    </div>
+
+    <script>
+        let allData = [];
+        
+        async function loadData() {
+            try {
+                const response = await fetch('./data.json');
+                const data = await response.json();
+                allData = data.ambiti_territoriali || [];
+                
+                document.getElementById('total').textContent = allData.length;
+                populateOptions();
+                testFilters(); // Mostra tutti inizialmente
+                
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    `<div class="error">❌ Errore caricamento: ${error.message}</div>`;
+            }
+        }
+        
+        function populateOptions() {
+            // Regioni
+            const regioni = [...new Set(allData.map(item => item.regione).filter(Boolean))].sort();
+            const regioneSelect = document.getElementById('regione-test');
+            regioni.forEach(regione => {
+                const option = document.createElement('option');
+                option.value = regione;
+                option.textContent = regione;
+                regioneSelect.appendChild(option);
+            });
+            
+            // Province
+            const provinceSet = new Set();
+            allData.forEach(item => {
+                if (item.provincia) provinceSet.add(String(item.provincia).trim());
+                if (item.dettaglioEnte?.provincia) provinceSet.add(String(item.dettaglioEnte.provincia).trim());
+            });
+            const province = [...provinceSet].filter(Boolean).sort();
+            const provinciaSelect = document.getElementById('provincia-test');
+            province.forEach(provincia => {
+                const option = document.createElement('option');
+                option.value = provincia;
+                option.textContent = provincia;
+                provinciaSelect.appendChild(option);
+            });
+            
+            // Comuni
+            const comuniSet = new Set();
+            allData.forEach(item => {
+                if (Array.isArray(item.comuniCompetenza)) {
+                    item.comuniCompetenza.forEach(comune => {
+                        if (comune && String(comune).trim()) {
+                            comuniSet.add(String(comune).trim());
+                        }
+                    });
+                }
+                const capofila = item.dettaglioEnte?.comuneCapofila;
+                if (capofila && String(capofila).trim()) {
+                    comuniSet.add(String(capofila).trim());
+                }
+            });
+            const comuni = [...comuniSet].sort();
+            const comuneSelect = document.getElementById('comune-test');
+            comuni.slice(0, 100).forEach(comune => { // Limite primi 100 per performance
+                const option = document.createElement('option');
+                option.value = comune;
+                option.textContent = comune;
+                comuneSelect.appendChild(option);
+            });
+        }
+        
+        function testFilters() {
+            const regioneFilter = document.getElementById('regione-test').value;
+            const provinciaFilter = document.getElementById('provincia-test').value;
+            const comuneFilter = document.getElementById('comune-test').value;
+            const enteFilter = document.getElementById('ente-test').value;
+            
+            let filtered = [...allData];
+            
+            // Applica filtri
+            if (regioneFilter) {
+                filtered = filtered.filter(item => 
+                    item.regione && item.regione.toLowerCase().includes(regioneFilter.toLowerCase())
+                );
+            }
+            
+            if (provinciaFilter) {
+                filtered = filtered.filter(item => {
+                    const provincia1 = item.provincia || '';
+                    const provincia2 = item.dettaglioEnte?.provincia || '';
+                    return provincia1.toLowerCase().includes(provinciaFilter.toLowerCase()) ||
+                           provincia2.toLowerCase().includes(provinciaFilter.toLowerCase());
+                });
+            }
+            
+            if (enteFilter) {
+                filtered = filtered.filter(item => {
+                    const nomeEnte = item.dettaglioEnte?.ente || '';
+                    const capofila = item.dettaglioEnte?.comuneCapofila || '';
+                    const searchStr = (nomeEnte + ' ' + capofila).toLowerCase();
+                    return searchStr.includes(enteFilter.toLowerCase());
+                });
+            }
+            
+            if (comuneFilter) {
+                filtered = filtered.filter(item => {
+                    const comuniCompetenza = (item.comuniCompetenza || []).map(c => (c || '').toLowerCase());
+                    const capofila = (item.dettaglioEnte?.comuneCapofila || '').toLowerCase();
+                    const allComuni = [...comuniCompetenza, capofila];
+                    return allComuni.some(c => c.includes(comuneFilter.toLowerCase()));
+                });
+            }
+            
+            // Mostra risultati
+            document.getElementById('count').textContent = filtered.length;
+            
+            const details = document.getElementById('details');
+            if (filtered.length > 0) {
+                const primi5 = filtered.slice(0, 5);
+                details.innerHTML = `
+                    <strong>Primi ${Math.min(5, filtered.length)} risultati:</strong><br>
+                    ${primi5.map((item, i) => 
+                        `${i+1}. ${item.regione} - ${item.dettaglioEnte?.ente || 'N/A'} (${item.comuniCompetenza?.length || 0} comuni)`
+                    ).join('<br>')}
+                    ${filtered.length > 5 ? '<br>...' : ''}
+                `;
+            } else if (regioneFilter || provinciaFilter || comuneFilter || enteFilter) {
+                details.innerHTML = '<strong>Nessun risultato trovato con i filtri attuali</strong>';
+            } else {
+                details.innerHTML = '<strong>Tutti gli ambiti territoriali</strong>';
+            }
+        }
+        
+        function clearTest() {
+            document.getElementById('regione-test').value = '';
+            document.getElementById('provincia-test').value = '';
+            document.getElementById('comune-test').value = '';
+            document.getElementById('ente-test').value = '';
+            testFilters();
+        }
+        
+        // Auto-applica filtri quando cambiano
+        document.getElementById('regione-test').addEventListener('change', testFilters);
+        document.getElementById('provincia-test').addEventListener('change', testFilters);
+        document.getElementById('comune-test').addEventListener('change', testFilters);
+        document.getElementById('ente-test').addEventListener('input', () => {
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(testFilters, 300);
+        });
+        
+        // Carica dati all'avvio
+        window.addEventListener('load', loadData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Filtri - Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { border: 1px solid #ddd; padding: 15px; margin: 10px 0; }
+        .error { color: red; font-weight: bold; }
+        .success { color: green; font-weight: bold; }
+        .warning { color: orange; font-weight: bold; }
+        .debug { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Filtri - Diagnostica</h1>
+    
+    <div class="test-section">
+        <h2>1. Caricamento Dati</h2>
+        <div id="data-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Struttura Dati</h2>
+        <div id="structure-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Test Filtri</h2>
+        <div id="filters-test"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Test Popolamento Opzioni</h2>
+        <div id="options-test"></div>
+    </div>
+
+    <script>
+        async function testFilters() {
+            const dataTest = document.getElementById('data-test');
+            const structureTest = document.getElementById('structure-test');
+            const filtersTest = document.getElementById('filters-test');
+            const optionsTest = document.getElementById('options-test');
+            
+            try {
+                // Test 1: Caricamento dati
+                dataTest.innerHTML = '⏳ Caricamento dati...';
+                const response = await fetch('./data.json');
+                const data = await response.json();
+                
+                dataTest.innerHTML = `
+                    <div class="success">✅ Dati caricati correttamente</div>
+                    <div>📊 Ambiti territoriali: ${data.ambiti_territoriali?.length || 0}</div>
+                    <div>🏛️ Regioni: ${data.metadata?.regionsIncluded?.length || 0}</div>
+                `;
+                
+                // Test 2: Struttura dati
+                if (data.ambiti_territoriali && data.ambiti_territoriali.length > 0) {
+                    const primo = data.ambiti_territoriali[0];
+                    structureTest.innerHTML = `
+                        <div class="success">✅ Struttura dati corretta</div>
+                        <div class="debug">
+                            <strong>Primo record:</strong><br>
+                            Keys: ${Object.keys(primo).join(', ')}<br>
+                            Regione: ${primo.regione || 'N/A'}<br>
+                            Provincia: ${primo.provincia || primo.dettaglioEnte?.provincia || 'N/A'}<br>
+                            Ente: ${primo.dettaglioEnte?.ente || 'N/A'}<br>
+                            Comuni: ${primo.comuniCompetenza?.length || 0}
+                        </div>
+                    `;
+                } else {
+                    structureTest.innerHTML = '<div class="error">❌ Struttura dati non valida</div>';
+                }
+                
+                // Test 3: Test logica filtri
+                const ambiti = data.ambiti_territoriali;
+                
+                // Raccogli regioni
+                const regioni = [...new Set(ambiti.map(item => item.regione).filter(Boolean))].sort();
+                
+                // Raccogli province
+                const provinceSet = new Set();
+                ambiti.forEach(item => {
+                    if (item.provincia) provinceSet.add(String(item.provincia).trim());
+                    if (item.dettaglioEnte?.provincia) provinceSet.add(String(item.dettaglioEnte.provincia).trim());
+                });
+                const province = [...provinceSet].filter(Boolean).sort();
+                
+                // Raccogli comuni
+                const comuniSet = new Set();
+                ambiti.forEach(item => {
+                    if (Array.isArray(item.comuniCompetenza)) {
+                        item.comuniCompetenza.forEach(comune => {
+                            if (comune && String(comune).trim()) {
+                                comuniSet.add(String(comune).trim());
+                            }
+                        });
+                    }
+                    const capofila = item.dettaglioEnte?.comuneCapofila;
+                    if (capofila && String(capofila).trim()) {
+                        comuniSet.add(String(capofila).trim());
+                    }
+                });
+                const comuni = [...comuniSet].sort();
+                
+                filtersTest.innerHTML = `
+                    <div class="success">✅ Logica filtri funzionante</div>
+                    <div class="debug">
+                        <strong>Opzioni estratte:</strong><br>
+                        🏛️ Regioni: ${regioni.length} (${regioni.slice(0, 3).join(', ')}...)<br>
+                        🏢 Province: ${province.length} (${province.slice(0, 3).join(', ')}...)<br>
+                        🏘️ Comuni: ${comuni.length} (${comuni.slice(0, 3).join(', ')}...)
+                    </div>
+                `;
+                
+                // Test 4: Test filtro specifico
+                const testRegione = regioni[0]; // Prima regione
+                const filtrati = ambiti.filter(item => 
+                    item.regione && item.regione.toLowerCase().includes(testRegione.toLowerCase())
+                );
+                
+                optionsTest.innerHTML = `
+                    <div class="success">✅ Test filtro regione funzionante</div>
+                    <div class="debug">
+                        <strong>Test filtro "${testRegione}":</strong><br>
+                        📋 Totale ambiti: ${ambiti.length}<br>
+                        🎯 Filtrati per ${testRegione}: ${filtrati.length}<br>
+                        ${filtrati.length > 0 ? '✅ Filtro funziona' : '❌ Filtro non funziona'}
+                    </div>
+                `;
+                
+            } catch (error) {
+                dataTest.innerHTML = `<div class="error">❌ Errore: ${error.message}</div>`;
+                console.error('Errore test:', error);
+            }
+        }
+        
+        // Avvia test al caricamento
+        window.addEventListener('load', testFilters);
+    </script>
+</body>
+</html>
