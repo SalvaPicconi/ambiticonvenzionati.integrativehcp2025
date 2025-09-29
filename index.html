@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prestazioni Integrative HCP2025 -Ambiti Territoriali</title>
+    <title>Prestazioni Integrative HCP2025 - Ambiti Territoriali</title>
     <link rel="stylesheet" href="styles.css">
     
     <!-- Social Preview -->
-    <meta property="og:title" content="Prestazioni Integrative HCP2025 -Ambiti Territoriali" />
+    <meta property="og:title" content="Prestazioni Integrative HCP2025 - Ambiti Territoriali" />
     <meta property="og:description" content="Analisi e consulenza per il cittadino. Dashboard interattiva su ambiti territoriali, comuni, province ed enti gestori." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://salvapicconi.github.io/ambiticonvenzionati.integrativehcp2025/" />
     <meta property="og:image" content="https://salvapicconi.github.io/ambiticonvenzionati.integrativehcp2025/favicon.png" />
     
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Prestazioni Integrative HCP2025 -Ambiti Territoriali" />
+    <meta name="twitter:title" content="Prestazioni Integrative HCP2025 - Ambiti Territoriali" />
     <meta name="twitter:description" content="Analisi e consulenza per il cittadino. Dashboard interattiva su ambiti territoriali, comuni, province ed enti gestori." />
     <meta name="twitter:image" content="https://salvapicconi.github.io/ambiticonvenzionati.integrativehcp2025/favicon.png" />
     <!-- Favicon -->
@@ -42,17 +42,19 @@
                     <h1>Dott. Picconi - Consulente per la non autosufficienza</h1>
                     <span class="header-subtitle">Analisi e consulenza per il cittadino</span>
                 </div>
-                
                 <div class="header-actions">
-                    <a 
-                        href="mailto:dott.picconi@gmail.com?subject=Richiesta%20consulenza%20Ambiti%20Territoriali"
-                        class="btn btn-cta" 
-                        aria-label="Richiedi consulenza via email"
-                        title="Richiedi consulenza"
-                    >
-                        ✉️ Richiedi consulenza
-                    </a>
-                    <button id="theme-toggle" class="btn btn-ghost" title="Cambia tema" aria-label="Cambia tema">☀️</button>
+                    <div class="cta-wrapper">
+                        <a 
+                            href="mailto:dott.picconi@gmail.com?subject=Richiesta%20consulenza%20Ambiti%20Territoriali"
+                            class="btn btn-cta" 
+                            aria-label="Richiedi consulenza via email"
+                            title="Richiedi consulenza"
+                        >
+                            📧 Richiedi consulenza
+                        </a>
+                        <span class="cta-subtext">Consulente per la Non autosufficienza - Patronato e Caf Integrato</span>
+                    </div>
+                    <button id="theme-toggle" class="btn btn-ghost" title="Cambia tema" aria-label="Cambia tema">🌙</button>
                 </div>
             </div>
         </header>
@@ -191,14 +193,14 @@
                                 <th class="sortable" data-column="regione">
                                     <span>Regione</span>
                                 </th>
-                                <th class="sortable" data-column="provincia">
-                                    <span>Provincia</span>
+                                <th class="sortable" data-column="ente">
+                                    <span>Ente Gestore</span>
                                 </th>
-                                <th class="sortable" data-column="numeroComuni">
-                                    <span>N. Comuni</span>
+                                <th class="sortable" data-column="comuneCapofila">
+                                    <span>Comune Capofila</span>
                                 </th>
-                                <th class="sortable" data-column="entiUnici">
-                                    <span>Enti Unici</span>
+                                <th class="sortable" data-column="nominativoAmbito">
+                                    <span>Nominativo Ambito</span>
                                 </th>
                                 <th>Azioni</th>
                             </tr>
@@ -231,7 +233,10 @@
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-info">
-                    <span>&copy; 2025 Dott. Picconi - Consulente per la non autosufficienza</span>
+                    <div class="footer-text">
+                        <span>&copy; 2025 Dott. Picconi - Consulente per la non autosufficienza</span>
+                        <span class="footer-extra">SEDE OPERATIVA Sardegna, Cagliari — Partita IVA 03480060924 — cod. fisc PCCSVT80T20I452Q — email: dott.picconi@gmail.com</span>
+                    </div>
                 </div>
                 <div class="footer-status">
                     <span id="connection-status" class="status-indicator online">Online</span>
@@ -244,6 +249,7 @@
     <script src="config.js"></script>
     <script src="utils.js"></script>
     <script src="app.js"></script>
+    <!-- <script src="app-simple.js"></script> -->
 
     <script>
         // Floating contact pill (no JS required, only anchors); kept here in case of future enhancements
@@ -263,6 +269,9 @@
         window.addEventListener('offline', updateConnectionStatus);
         updateConnectionStatus();
     </script>
+
+    <!-- Script di verifica dati -->
+    <script src="verify-data.js"></script>
 
     <!-- Floating Contact Pill (non invasivo) -->
     <div class="contact-fab" role="complementary" aria-label="Contatti rapidi">

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Semplificata - Test</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Dott. Picconi - Consulente per la non autosufficienza</h1>
+                    <span class="header-subtitle">Analisi e consulenza per il cittadino</span>
+                </div>
+                <div class="header-actions">
+                    <div class="cta-wrapper">
+                        <a 
+                            href="mailto:dott.picconi@gmail.com?subject=Richiesta%20consulenza%20Ambiti%20Territoriali"
+                            class="btn btn-cta" 
+                            aria-label="Richiedi consulenza via email"
+                            title="Richiedi consulenza"
+                        >
+                            📧 Richiedi consulenza
+                        </a>
+                        <span class="cta-subtext">Consulente per la Non autosufficienza - Patronato e Caf Integrato</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="main">
+            <section class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-ambiti">0</div>
+                        <div class="stat-label">Ambiti Territoriali</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-comuni">0</div>
+                        <div class="stat-label">Comuni Coinvolti</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-enti">0</div>
+                        <div class="stat-label">Enti Gestori</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="stat-filtrati">0</div>
+                        <div class="stat-label">Record Filtrati</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="table-section">
+                <div class="table-container">
+                    <table class="pivot-table">
+                        <thead>
+                            <tr>
+                                <th>Regione</th>
+                                <th>Ente Gestore</th>
+                                <th>Comune Capofila</th>
+                                <th>Nominativo Ambito</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 20px;">
+                                    Caricamento dati...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="footer-text">
+                        <span>&copy; 2025 Dott. Picconi - Consulente per la non autosufficienza</span>
+                        <span class="footer-extra">SEDE OPERATIVA Sardegna, Cagliari — Partita IVA 03480060924 — cod. fisc PCCSVT80T20I452Q — email: dott.picconi@gmail.com</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        async function loadAndDisplay() {
+            console.log('🚀 Inizio caricamento...');
+            
+            try {
+                // Fetch dati
+                const response = await fetch('/data.json');
+                const jsonData = await response.json();
+                const ambiti = jsonData.ambiti_territoriali || [];
+                
+                console.log(`✅ Caricati ${ambiti.length} ambiti`);
+                
+                // Aggiorna statistiche
+                document.getElementById('stat-ambiti').textContent = ambiti.length;
+                document.getElementById('stat-comuni').textContent = 
+                    new Set(ambiti.flatMap(a => a.comuniCompetenza || [])).size;
+                document.getElementById('stat-enti').textContent = ambiti.length;
+                document.getElementById('stat-filtrati').textContent = ambiti.length;
+                
+                // Aggiorna tabella
+                const tableBody = document.getElementById('table-body');
+                if (ambiti.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="4">Nessun dato trovato</td></tr>';
+                    return;
+                }
+                
+                const rows = ambiti.slice(0, 10).map(ambito => `
+                    <tr>
+                        <td>${ambito.regione || 'N/A'}</td>
+                        <td>${ambito.dettaglioEnte?.ente || 'N/A'}</td>
+                        <td>${ambito.dettaglioEnte?.comuneCapofila || 'N/A'}</td>
+                        <td>${ambito.nominativoAmbito || 'N/A'}</td>
+                    </tr>
+                `).join('');
+                
+                tableBody.innerHTML = rows;
+                console.log('✅ Tabella aggiornata');
+                
+            } catch (error) {
+                console.error('❌ Errore:', error);
+                document.getElementById('table-body').innerHTML = 
+                    `<tr><td colspan="4">Errore: ${error.message}</td></tr>`;
+            }
+        }
+        
+        // Avvia quando DOM è pronto
+        document.addEventListener('DOMContentLoaded', loadAndDisplay);
+    </script>
+</body>
+</html>
