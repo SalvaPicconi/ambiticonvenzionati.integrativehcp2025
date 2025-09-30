@@ -1,0 +1,14 @@
+#!/bin/bash
+# Hook pre-push di esempio: esegue la verifica rapida prima di consentire il push
+set -euo pipefail
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+cd "$ROOT_DIR"
+
+if [[ ! -x ./verify-before-merge.sh ]]; then
+  echo "[pre-push] Script ./verify-before-merge.sh non trovato o non eseguibile."
+  echo "[pre-push] Rendi eseguibile con: chmod +x ./verify-before-merge.sh"
+  exit 1
+fi
+
+./verify-before-merge.sh
