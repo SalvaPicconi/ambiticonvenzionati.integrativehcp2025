@@ -1,0 +1,312 @@
+{
+  "metadata": {
+    "title": "Ambiti Territoriali Italiani - Dataset di Esempio",
+    "description": "Dati degli ambiti territoriali con enti gestori e comuni di competenza",
+    "version": "1.0.0",
+    "createdAt": "2025-01-27T10:00:00Z",
+    "recordCount": 15
+  },
+  "ambiti_territoriali": [
+    {
+      "regione": "PIEMONTE",
+      "provincia": "TO",
+      "numeroComuni": 38,
+      "entiUnici": 2,
+      "ambitiUnici": 2,
+      "entiDistinti": ["COMUNE DI TORINO", "CONSORZIO INTERCOMUNALE SOCIO ASSISTENZIALE"],
+      "comuniDistinti": ["TORINO", "MONCALIERI", "COLLEGNO", "RIVOLI", "SETTIMO TORINESE", "NICHELINO", "CHIERI", "IVREA"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI TORINO",
+          "indirizzo": "Piazza Palazzo di Città 1",
+          "comuneAmbito": "TORINO",
+          "comuneCompetenza": "TORINO",
+          "cap": "10122",
+          "codice": "L219"
+        },
+        {
+          "ente": "CONSORZIO INTERCOMUNALE SOCIO ASSISTENZIALE",
+          "indirizzo": "Via Roma 123",
+          "comuneAmbito": "MONCALIERI",
+          "comuneCompetenza": "MONCALIERI",
+          "cap": "10024",
+          "codice": "F704"
+        }
+      ]
+    },
+    {
+      "regione": "LOMBARDIA",
+      "provincia": "MI",
+      "numeroComuni": 134,
+      "entiUnici": 8,
+      "ambitiUnici": 12,
+      "entiDistinti": ["COMUNE DI MILANO", "CITTÀ METROPOLITANA", "AZIENDA SOCIALE MILANESE"],
+      "comuniDistinti": ["MILANO", "MONZA", "BERGAMO", "BRESCIA", "COMO", "VARESE", "PAVIA", "MANTOVA"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI MILANO",
+          "indirizzo": "Piazza della Scala 2",
+          "comuneAmbito": "MILANO",
+          "comuneCompetenza": "MILANO",
+          "cap": "20121",
+          "codice": "F205"
+        },
+        {
+          "ente": "CITTÀ METROPOLITANA",
+          "indirizzo": "Via Vivaio 1",
+          "comuneAmbito": "MILANO",
+          "comuneCompetenza": "MILANO",
+          "cap": "20122",
+          "codice": "M082"
+        }
+      ]
+    },
+    {
+      "regione": "LAZIO",
+      "provincia": "RM",
+      "numeroComuni": 121,
+      "entiUnici": 5,
+      "ambitiUnici": 8,
+      "entiDistinti": ["ROMA CAPITALE", "CITTÀ METROPOLITANA DI ROMA"],
+      "comuniDistinti": ["ROMA", "FIUMICINO", "TIVOLI", "FRASCATI", "ANZIO", "VELLETRI", "GUIDONIA"],
+      "dettagliEnti": [
+        {
+          "ente": "ROMA CAPITALE",
+          "indirizzo": "Piazza del Campidoglio 1",
+          "comuneAmbito": "ROMA",
+          "comuneCompetenza": "ROMA",
+          "cap": "00186",
+          "codice": "H501"
+        }
+      ]
+    },
+    {
+      "regione": "VENETO",
+      "provincia": "VE",
+      "numeroComuni": 44,
+      "entiUnici": 3,
+      "ambitiUnici": 4,
+      "entiDistinti": ["COMUNE DI VENEZIA", "UNIONE VENEZIANA"],
+      "comuniDistinti": ["VENEZIA", "MESTRE", "CHIOGGIA", "MIRA", "DOLO", "SPINEA"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI VENEZIA",
+          "indirizzo": "Ca' Farsetti",
+          "comuneAmbito": "VENEZIA",
+          "comuneCompetenza": "VENEZIA",
+          "cap": "30124",
+          "codice": "L736"
+        }
+      ]
+    },
+    {
+      "regione": "EMILIA-ROMAGNA",
+      "provincia": "BO",
+      "numeroComuni": 60,
+      "entiUnici": 4,
+      "ambitiUnici": 6,
+      "entiDistinti": ["COMUNE DI BOLOGNA", "CITTÀ METROPOLITANA BOLOGNA"],
+      "comuniDistinti": ["BOLOGNA", "IMOLA", "CASALECCHIO", "FAENZA", "SAN LAZZARO"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI BOLOGNA",
+          "indirizzo": "Piazza Maggiore 6",
+          "comuneAmbito": "BOLOGNA",
+          "comuneCompetenza": "BOLOGNA",
+          "cap": "40124",
+          "codice": "A944"
+        }
+      ]
+    },
+    {
+      "regione": "TOSCANA",
+      "provincia": "FI",
+      "numeroComuni": 42,
+      "entiUnici": 3,
+      "ambitiUnici": 5,
+      "entiDistinti": ["COMUNE DI FIRENZE", "CITTÀ METROPOLITANA FIRENZE"],
+      "comuniDistinti": ["FIRENZE", "PRATO", "PISTOIA", "EMPOLI", "SESTO FIORENTINO"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI FIRENZE",
+          "indirizzo": "Piazza della Signoria 1",
+          "comuneAmbito": "FIRENZE",
+          "comuneCompetenza": "FIRENZE",
+          "cap": "50122",
+          "codice": "D612"
+        }
+      ]
+    },
+    {
+      "regione": "CAMPANIA",
+      "provincia": "NA",
+      "numeroComuni": 92,
+      "entiUnici": 6,
+      "ambitiUnici": 10,
+      "entiDistinti": ["COMUNE DI NAPOLI", "CITTÀ METROPOLITANA NAPOLI"],
+      "comuniDistinti": ["NAPOLI", "SALERNO", "CASERTA", "GIUGLIANO", "TORRE DEL GRECO"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI NAPOLI",
+          "indirizzo": "Piazza Municipio 1",
+          "comuneAmbito": "NAPOLI",
+          "comuneCompetenza": "NAPOLI",
+          "cap": "80133",
+          "codice": "F839"
+        }
+      ]
+    },
+    {
+      "regione": "SICILIA",
+      "provincia": "PA",
+      "numeroComuni": 82,
+      "entiUnici": 4,
+      "ambitiUnici": 7,
+      "entiDistinti": ["COMUNE DI PALERMO", "CITTÀ METROPOLITANA PALERMO"],
+      "comuniDistinti": ["PALERMO", "CATANIA", "MESSINA", "SIRACUSA", "MARSALA"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI PALERMO",
+          "indirizzo": "Piazza Pretoria 1",
+          "comuneAmbito": "PALERMO",
+          "comuneCompetenza": "PALERMO",
+          "cap": "90128",
+          "codice": "G273"
+        }
+      ]
+    },
+    {
+      "regione": "PUGLIA",
+      "provincia": "BA",
+      "numeroComuni": 48,
+      "entiUnici": 3,
+      "ambitiUnici": 4,
+      "entiDistinti": ["COMUNE DI BARI", "CITTÀ METROPOLITANA BARI"],
+      "comuniDistinti": ["BARI", "TARANTO", "FOGGIA", "LECCE", "BRINDISI"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI BARI",
+          "indirizzo": "Corso Vittorio Emanuele II 84",
+          "comuneAmbito": "BARI",
+          "comuneCompetenza": "BARI",
+          "cap": "70122",
+          "codice": "A662"
+        }
+      ]
+    },
+    {
+      "regione": "CALABRIA",
+      "provincia": "RC",
+      "numeroComuni": 97,
+      "entiUnici": 2,
+      "ambitiUnici": 3,
+      "entiDistinti": ["COMUNE DI REGGIO CALABRIA"],
+      "comuniDistinti": ["REGGIO CALABRIA", "COSENZA", "CATANZARO", "CROTONE"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI REGGIO CALABRIA",
+          "indirizzo": "Piazza Italia 1",
+          "comuneAmbito": "REGGIO CALABRIA",
+          "comuneCompetenza": "REGGIO CALABRIA",
+          "cap": "89123",
+          "codice": "H224"
+        }
+      ]
+    },
+    {
+      "regione": "SARDEGNA",
+      "provincia": "CA",
+      "numeroComuni": 71,
+      "entiUnici": 3,
+      "ambitiUnici": 5,
+      "entiDistinti": ["COMUNE DI CAGLIARI", "CITTÀ METROPOLITANA CAGLIARI"],
+      "comuniDistinti": ["CAGLIARI", "SASSARI", "QUARTU SANT'ELENA", "OLBIA"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI CAGLIARI",
+          "indirizzo": "Via Roma 145",
+          "comuneAmbito": "CAGLIARI",
+          "comuneCompetenza": "CAGLIARI",
+          "cap": "09124",
+          "codice": "B354"
+        }
+      ]
+    },
+    {
+      "regione": "LIGURIA",
+      "provincia": "GE",
+      "numeroComuni": 67,
+      "entiUnici": 3,
+      "ambitiUnici": 4,
+      "entiDistinti": ["COMUNE DI GENOVA", "CITTÀ METROPOLITANA GENOVA"],
+      "comuniDistinti": ["GENOVA", "LA SPEZIA", "SAVONA", "IMPERIA", "RAPALLO"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI GENOVA",
+          "indirizzo": "Piazza Matteotti 9",
+          "comuneAmbito": "GENOVA",
+          "comuneCompetenza": "GENOVA",
+          "cap": "16123",
+          "codice": "D969"
+        }
+      ]
+    },
+    {
+      "regione": "MARCHE",
+      "provincia": "AN",
+      "numeroComuni": 49,
+      "entiUnici": 2,
+      "ambitiUnici": 3,
+      "entiDistinti": ["COMUNE DI ANCONA"],
+      "comuniDistinti": ["ANCONA", "PESARO", "ASCOLI PICENO", "MACERATA"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI ANCONA",
+          "indirizzo": "Piazza XXIV Maggio 1",
+          "comuneAmbito": "ANCONA",
+          "comuneCompetenza": "ANCONA",
+          "cap": "60124",
+          "codice": "A271"
+        }
+      ]
+    },
+    {
+      "regione": "ABRUZZO",
+      "provincia": "PE",
+      "numeroComuni": 46,
+      "entiUnici": 2,
+      "ambitiUnici": 3,
+      "entiDistinti": ["COMUNE DI PESCARA"],
+      "comuniDistinti": ["PESCARA", "L'AQUILA", "CHIETI", "TERAMO"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI PESCARA",
+          "indirizzo": "Piazza Italia 1",
+          "comuneAmbito": "PESCARA",
+          "comuneCompetenza": "PESCARA",
+          "cap": "65121",
+          "codice": "G482"
+        }
+      ]
+    },
+    {
+      "regione": "UMBRIA",
+      "provincia": "PG",
+      "numeroComuni": 59,
+      "entiUnici": 2,
+      "ambitiUnici": 3,
+      "entiDistinti": ["COMUNE DI PERUGIA"],
+      "comuniDistinti": ["PERUGIA", "TERNI", "FOLIGNO", "CITTÀ DI CASTELLO"],
+      "dettagliEnti": [
+        {
+          "ente": "COMUNE DI PERUGIA",
+          "indirizzo": "Piazza IV Novembre 1",
+          "comuneAmbito": "PERUGIA",
+          "comuneCompetenza": "PERUGIA",
+          "cap": "06123",
+          "codice": "G478"
+        }
+      ]
+    }
+  ]
+}

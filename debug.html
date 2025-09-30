@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Ambiti Territoriali</title>
+</head>
+<body>
+    <h1>Debug Console</h1>
+    <div id="debug-output"></div>
+    
+    <script>
+        const debugOutput = document.getElementById('debug-output');
+        
+        function log(message) {
+            console.log(message);
+            debugOutput.innerHTML += `<p>${message}</p>`;
+        }
+        
+        log('🔍 Inizio debug...');
+        
+        // Test caricamento data.json
+        fetch('/data.json')
+            .then(response => {
+                log(`✅ data.json status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                log(`✅ data.json caricato: ${Object.keys(data).length} chiavi principali`);
+                if (data.ambiti_territoriali) {
+                    log(`✅ Ambiti trovati: ${data.ambiti_territoriali.length}`);
+                    log(`✅ Primo ambito: ${data.ambiti_territoriali[0]?.regione || 'N/A'}`);
+                } else {
+                    log('❌ Struttura data.json non valida');
+                }
+            })
+            .catch(error => {
+                log(`❌ Errore caricamento data.json: ${error.message}`);
+            });
+            
+        // Test caricamento app.js
+        log('🔍 Verifico app.js...');
+        if (typeof appState !== 'undefined') {
+            log('✅ appState trovato');
+        } else {
+            log('❌ appState non trovato');
+        }
+        
+        if (typeof loadData !== 'undefined') {
+            log('✅ loadData function trovata');
+        } else {
+            log('❌ loadData function non trovata');
+        }
+    </script>
+</body>
+</html>
